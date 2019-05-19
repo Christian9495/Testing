@@ -1,0 +1,18 @@
+#! /bin/bash
+#
+# USO di questo script:  ./aggiustaRotteHost <TUONOMEUTENTE>
+#
+if [[ -z "$1" ]]
+then
+   echo "USO di questo script:  ./aggiustaRotteHost <TUONOMEUTENTE>"
+   exit 1
+fi
+sudo route del -net 10.0.0.0/8
+sudo route add -net 10.1.0.0/24 dev nk_tap_$1
+sudo route add -net 10.1.0.0/16 gw 10.1.0.2
+sudo iptables -t nat -D POSTROUTING -s 10.1.0.0/16 -j MASQUERADE
+sudo iptables -t nat -I POSTROUTING -s 10.1.0.0/16 -j MASQUERADE
+sudo iptables -I FORWARD -i nk_tap_$1 -j ACCEPT
+
+echo LE NUOVE ROTTE SONO:
+sudo route -n
